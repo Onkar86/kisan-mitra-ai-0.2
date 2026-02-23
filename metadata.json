@@ -1,0 +1,8 @@
+{
+  "name": "Kisan Mitra AI - Smart Farmer Assistant",
+  "description": "An advanced agricultural advisor providing dual solutions: modern scientific (chemical) and traditional natural (Rajiv Dixit inspired) methods for crop health and pest management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
