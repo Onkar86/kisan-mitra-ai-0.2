@@ -9,16 +9,18 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleAuth = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
       await signInWithGoogle();
+      // Success - App.tsx will handle the auth state change
       onLoginSuccess();
     } catch (err: any) {
-      setError(err.message || "Failed to sign in with Google");
-      console.error("Login error:", err);
+      const errorMessage = err.message || "Failed to sign in. Please try again.";
+      console.error("Auth error:", err);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -37,16 +39,16 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
 
       {/* Card Container */}
       <div className="bg-white/5 backdrop-blur-md border border-lime-500/20 rounded-2xl p-8 w-full max-w-md shadow-2xl">
-        <h2 className="text-white text-2xl font-bold mb-2 text-center">Welcome to the Farm</h2>
+        <h2 className="text-white text-2xl font-bold mb-1 text-center">Welcome to the Farm</h2>
         <p className="text-white/60 text-center text-sm mb-8">
-          Sign in to access your personalized farming AI assistant and save your data securely.
+          Sign in to access your AI farming assistant and save your data securely.
         </p>
 
-        {/* Google Sign-In Button */}
+        {/* Sign In / Create Account Button */}
         <button
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleAuth}
           disabled={isLoading}
-          className="w-full bg-white hover:bg-white/90 disabled:bg-white/50 text-gray-900 font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg"
+          className="w-full bg-white hover:bg-white/90 disabled:bg-white/50 text-gray-900 font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg mb-3"
         >
           {isLoading ? (
             <>
@@ -80,21 +82,19 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
 
         {/* Error Message */}
         {error && (
-          <div className="mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
-            {error}
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+            <p className="text-red-300 text-sm font-semibold mb-2">⚠️ Error:</p>
+            <p className="text-red-300 text-xs leading-relaxed whitespace-pre-wrap">{error}</p>
           </div>
         )}
 
         {/* Info Text */}
-        <p className="text-white/40 text-xs mt-6 text-center leading-relaxed">
-          ✓ One-click sign in with your Google account
-          <br />
-          ✓ Your data is saved securely in the cloud
-          <br />
-          ✓ Access from any device
-          <br />
-          ✓ 100% Free - No credit card needed
-        </p>
+        <div className="space-y-2 text-white/50 text-xs text-center leading-relaxed">
+          <p>✓ One-click sign in with your Google account</p>
+          <p>✓ Your data is saved securely in the cloud</p>
+          <p>✓ Access from any device</p>
+          <p>✓ 100% Free - No credit card needed</p>
+        </div>
       </div>
 
       {/* Features Section */}
@@ -111,6 +111,17 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
           <div className="text-2xl mb-2">🌍</div>
           <p className="text-white/70 text-xs font-semibold">Multi-Device</p>
         </div>
+      </div>
+
+      {/* Troubleshooting Help */}
+      <div className="w-full max-w-md mt-8 text-center text-white/40 text-xs border-t border-white/10 pt-6">
+        <p className="mb-2">Having trouble signing in?</p>
+        <p className="text-white/30">Make sure:</p>
+        <ul className="text-white/30 text-xs mt-2 space-y-1">
+          <li>✓ JavaScript is enabled</li>
+          <li>✓ Pop-ups are allowed for this site</li>
+          <li>✓ You're using a modern browser</li>
+        </ul>
       </div>
     </div>
   );

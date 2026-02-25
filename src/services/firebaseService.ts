@@ -1,11 +1,13 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, FirebaseApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
   onAuthStateChanged,
   signOut,
-  User
+  User,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -15,12 +17,12 @@ import {
   collection,
   addDoc,
   query,
-  where,
-  getDocs
+  getDocs,
+  Firestore
 } from 'firebase/firestore';
 import { UserProfile, DiagnosisResult } from '../types';
 
-// Firebase config - From your Firebase Console
+// Firebase config - From Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyAOifhW06Co4FoqrKWqW43hVKqF-43EoD0",
   authDomain: "kisan-mitra-ai-a362f.firebaseapp.com",
@@ -31,43 +33,100 @@ const firebaseConfig = {
   measurementId: "G-E47146W11C"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+let app: FirebaseApp | null = null;
+let auth: any = null;
+let db: Firestore | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
-// Enable offline persistence
-// enableIndexedDbPersistence(db).catch(() => {
-//   // Ignore errors for now
-// });
+// Initialize Firebase
+const initializeFirebase = () => {
+  if (app) return { app, auth, db, googleProvider };
+  
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    // Configure Google Sign-In Provider
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.addScope('profile');
+    googleProvider.addScope('email');
+    googleProvider.setCustomParameters({
+      'prompt': 'consent'
+    });
+    
+    // Set persistence to LOCAL
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.warn('Persistence setup failed:', err.message);
+    });
+    
+    console.log('Firebase initialized successfully');
+    return { app, auth, db, googleProvider };
+  } catch (error: any) {
+    console.error('Firebase initialization error:', error);
+    throw new Error(`Firebase init failed: ${error.message}`);
+  }
+};
+
+// Initialize on module load
+const { app: fbApp, auth: fbAuth, db: fbDb, googleProvider: fbProvider } = initializeFirebase();
 
 /**
- * Sign in with Google
+ * Sign in with Google - Works for both new and existing users
  */
 export const signInWithGoogle = async (): Promise<User> => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    if (!fbAuth || !fbProvider) {
+      throw new Error('Firebase not initialized. Check Firebase configuration.');
+    }
+    
+    const result = await signInWithPopup(fbAuth, fbProvider);
     const user = result.user;
     
-    // Save user profile to Firestore if new
-    await saveUserProfile({
-      uid: user.uid,
-      name: user.displayName || "Farmer",
-      email: user.email || "",
-      photoURL: user.photoURL || "",
-      onboarded: false,
-      aiProvider: 0 as any,
-      language: 'en' as any,
-      address: '',
-      farmSize: 0,
-      crops: [],
-      phone: user.phoneNumber || ""
-    });
+    if (!user.uid) {
+      throw new Error('User ID not found');
+    }
+    
+    console.log('User signed in:', user.email);
+    
+    // Check if user exists in Firestore
+    const userDoc = await getDoc(doc(fbDb!, 'users', user.uid));
+    
+    // If new user, create profile
+    if (!userDoc.exists()) {
+      console.log('Creating new user profile');
+      await saveUserProfile({
+        uid: user.uid,
+        name: user.displayName || "Farmer",
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+        photoURL: user.photoURL || "",
+        onboarded: false,
+        aiProvider: 0 as any,
+        language: 'en' as any,
+        address: '',
+        farmSize: 0,
+        crops: []
+      });
+    }
     
     return user;
   } catch (error: any) {
     console.error("Google Sign-In Error:", error);
+    
+    // Provide user-friendly error messages
+    if (error.code === 'auth/configuration-not-found') {
+      throw new Error('❌ Firebase Auth not enabled. Enable Google Sign-In in Firebase Console → Authentication → Google provider.');
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('You closed the sign-in popup. Please try again.');
+    } else if (error.code === 'auth/unauthorized-domain') {
+      throw new Error('❌ Domain not authorized. Add "onkar86.github.io" in Firebase Console → Authentication → Settings → Authorized domains.');
+    } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+      throw new Error('Sign-in not supported. Try a different browser or clear cache.');
+    } else if (error.code === 'auth/invalid-api-key') {
+      throw new Error('❌ Invalid Firebase API key. Check Firebase configuration.');
+    }
+    
     throw error;
   }
 };
@@ -77,7 +136,10 @@ export const signInWithGoogle = async (): Promise<User> => {
  */
 export const logout = async (): Promise<void> => {
   try {
-    await signOut(auth);
+    if (fbAuth) {
+      await signOut(fbAuth);
+      console.log('User signed out');
+    }
   } catch (error) {
     console.error("Sign Out Error:", error);
     throw error;
@@ -88,14 +150,20 @@ export const logout = async (): Promise<void> => {
  * Get current authenticated user
  */
 export const getCurrentUser = (): User | null => {
-  return auth.currentUser;
+  if (!fbAuth) return null;
+  return fbAuth.currentUser;
 };
 
 /**
  * Subscribe to auth state changes
  */
 export const subscribeToAuthState = (callback: (user: User | null) => void) => {
-  const unsubscribe = onAuthStateChanged(auth, callback);
+  if (!fbAuth) {
+    console.error('Auth not initialized');
+    return () => {};
+  }
+  
+  const unsubscribe = onAuthStateChanged(fbAuth, callback);
   return unsubscribe;
 };
 
@@ -104,17 +172,18 @@ export const subscribeToAuthState = (callback: (user: User | null) => void) => {
  */
 export const saveUserProfile = async (profile: UserProfile): Promise<void> => {
   try {
-    if (!profile.uid) {
-      console.warn("No user ID provided");
+    if (!fbDb || !profile.uid) {
+      console.warn("No database or user ID");
       return;
     }
     
-    const userRef = doc(db, 'users', profile.uid);
+    const userRef = doc(fbDb, 'users', profile.uid);
     await setDoc(userRef, {
       ...profile,
       updatedAt: new Date().toISOString(),
       createdAt: profile.createdAt || new Date().toISOString()
     }, { merge: true });
+    console.log('Profile saved for user:', profile.uid);
   } catch (error) {
     console.error("Error saving user profile:", error);
     throw error;
@@ -126,7 +195,9 @@ export const saveUserProfile = async (profile: UserProfile): Promise<void> => {
  */
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
   try {
-    const userRef = doc(db, 'users', uid);
+    if (!fbDb) return null;
+    
+    const userRef = doc(fbDb, 'users', uid);
     const docSnap = await getDoc(userRef);
     
     if (docSnap.exists()) {
@@ -144,7 +215,9 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
  */
 export const saveDiagnosisResult = async (uid: string, result: DiagnosisResult): Promise<string> => {
   try {
-    const historyRef = collection(db, 'users', uid, 'history');
+    if (!fbDb) throw new Error('Database not initialized');
+    
+    const historyRef = collection(fbDb, 'users', uid, 'history');
     const docRef = await addDoc(historyRef, {
       ...result,
       timestamp: new Date().toISOString()
@@ -161,7 +234,9 @@ export const saveDiagnosisResult = async (uid: string, result: DiagnosisResult):
  */
 export const getUserHistory = async (uid: string): Promise<DiagnosisResult[]> => {
   try {
-    const historyRef = collection(db, 'users', uid, 'history');
+    if (!fbDb) return [];
+    
+    const historyRef = collection(fbDb, 'users', uid, 'history');
     const q = query(historyRef);
     const querySnapshot = await getDocs(q);
     
@@ -185,4 +260,5 @@ export const getUserHistory = async (uid: string): Promise<DiagnosisResult[]> =>
   }
 };
 
-export { auth, db };
+export { fbAuth as auth, fbDb as db };
+
