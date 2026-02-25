@@ -20,14 +20,15 @@ import {
 } from 'firebase/firestore';
 import { UserProfile, DiagnosisResult } from '../types';
 
-// Firebase config - Replace with your Firebase project config
+// Firebase config - From your Firebase Console
 const firebaseConfig = {
-  apiKey: (import.meta as any).env?.VITE_FIREBASE_API_KEY || "AIzaSyDemoKey",
-  authDomain: (import.meta as any).env?.VITE_FIREBASE_AUTH_DOMAIN || "kisan-mitra-ai.firebaseapp.com",
-  projectId: (import.meta as any).env?.VITE_FIREBASE_PROJECT_ID || "kisan-mitra-ai",
-  storageBucket: (import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || "kisan-mitra-ai.appspot.com",
-  messagingSenderId: (import.meta as any).env?.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: (import.meta as any).env?.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123"
+  apiKey: "AIzaSyAOifhW06Co4FoqrKWqW43hVKqF-43EoD0",
+  authDomain: "kisan-mitra-ai-a362f.firebaseapp.com",
+  projectId: "kisan-mitra-ai-a362f",
+  storageBucket: "kisan-mitra-ai-a362f.firebasestorage.app",
+  messagingSenderId: "483867268048",
+  appId: "1:483867268048:web:2da049c9ba94e0cf339fd5",
+  measurementId: "G-E47146W11C"
 };
 
 // Initialize Firebase
