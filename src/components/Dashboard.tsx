@@ -40,8 +40,19 @@ const Dashboard: React.FC<{userProfile: UserProfile | null, setView: (view: AppV
         </div>
       </div>
 
-      {/* Simplified 3-Button Launcher */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Simplified 4-Button Launcher - AI Chat as Primary */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <button 
+          onClick={() => setView(AppView.FARM_AI_CHAT)}
+          className="bg-gradient-to-br from-green-600 to-lime-500 p-8 rounded-[3rem] border border-lime-300 shadow-xl hover:shadow-2xl transition-all group flex flex-col items-center text-center space-y-4 md:col-span-2 text-white"
+        >
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">💬</div>
+          <div>
+            <h4 className="text-xl font-black">AI FARM COMPANION</h4>
+            <p className="text-sm font-bold opacity-90">Ask anything • अपने सवाल पूछो</p>
+          </div>
+        </button>
+
         <button 
           onClick={() => setView(AppView.LIVE_VOICE)}
           className="bg-white p-8 rounded-[3rem] border border-stone-100 shadow-xl hover:shadow-2xl transition-all group flex flex-col items-center text-center space-y-4"

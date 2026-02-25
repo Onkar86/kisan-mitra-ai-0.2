@@ -6,13 +6,23 @@ export enum AppView {
   RAJIV_WISDOM = 'RAJIV_WISDOM',
   HISTORY = 'HISTORY',
   PROFILE = 'PROFILE',
-  LIVE_VOICE = 'LIVE_VOICE'
+  LIVE_VOICE = 'LIVE_VOICE',
+  FARM_AI_CHAT = 'FARM_AI_CHAT',
+  EMERGENCY_HELP = 'EMERGENCY_HELP'
 }
 
 export enum AIProvider {
   GEMINI = 'GEMINI',
   OPENAI = 'OPENAI'
 }
+
+export enum FarmingMode {
+  ORGANIC_ONLY = 'ORGANIC_ONLY',
+  CHEMICAL = 'CHEMICAL',
+  BOTH = 'BOTH'
+}
+
+export type SoilType = 'black' | 'red' | 'sandy' | 'loamy' | 'clay' | 'mixed';
 
 export type SupportedLanguage = 'hi' | 'mr' | 'pa' | 'gu' | 'ta' | 'te' | 'kn' | 'bn' | 'ml' | 'or' | 'en';
 
@@ -42,6 +52,31 @@ export interface UserProfile {
   language: SupportedLanguage;
   aiProvider: AIProvider;
   onboarded: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  // New farm-specific data
+  farmingMode?: FarmingMode;
+  soilType?: SoilType;
+  district?: string;
+  state?: string;
+  currentFertilizers?: string[];
+}
+
+export interface ChatMessage {
+  id?: string;
+  role: 'user' | 'ai';
+  content: string;
+  language: SupportedLanguage;
+  timestamp?: string;
+  farmingMode?: FarmingMode;
+  cropContext?: string;
+}
+
+export interface ChatSession {
+  id?: string;
+  userId?: string;
+  messages: ChatMessage[];
+  language: SupportedLanguage;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -86,8 +121,9 @@ export interface DiagnosisResult {
 
 export interface AppNotification {
   id: string;
-  type: 'weather' | 'pest' | 'market';
+  type: 'weather' | 'pest' | 'market' | 'emergency';
   title: string;
   message: string;
   time: number;
+  severity?: 'low' | 'medium' | 'high';
 }

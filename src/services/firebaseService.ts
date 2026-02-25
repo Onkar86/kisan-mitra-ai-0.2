@@ -18,7 +18,10 @@ import {
   addDoc,
   query,
   getDocs,
-  Firestore
+  Firestore,
+  orderBy,
+  limit,
+  updateDoc
 } from 'firebase/firestore';
 import { UserProfile, DiagnosisResult } from '../types';
 
@@ -260,5 +263,78 @@ export const getUserHistory = async (uid: string): Promise<DiagnosisResult[]> =>
   }
 };
 
+// Save chat message to Firestore
+export const saveChatMessage = async (userId: string, message: any) => {
+  try {
+    if (!fbDb) {
+      throw new Error("Firebase not initialized");
+    }
+    
+    const messagesRef = collection(fbDb, 'users', userId, 'chat_messages');
+    const docRef = await addDoc(messagesRef, {
+      ...message,
+      userId,
+      createdAt: new Date().toISOString()
+    });
+    
+    return docRef.id;
+  } catch (error) {
+    console.error("Error saving chat message:", error);
+    throw error;
+  }
+};
+
+// Get chat history for user
+export const getChatHistory = async (userId: string, limit_: number = 50) => {
+  try {
+    if (!fbDb) {
+      throw new Error("Firebase not initialized");
+    }
+    
+    const messagesRef = collection(fbDb, 'users', userId, 'chat_messages');
+    const q = query(
+      messagesRef,
+      orderBy('createdAt', 'desc'),
+      limit(limit_)
+    );
+    
+    const snapshot = await getDocs(q);
+    const messages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    return messages.reverse(); // Return oldest first
+  } catch (error) {
+    console.error("Error getting chat history:", error);
+    return [];
+  }
+};
+
+// Update user farming profile
+export const updateFarmingProfile = async (userId: string, profile: any) => {
+  try {
+    if (!fbDb) {
+      throw new Error("Firebase not initialized");
+    }
+    
+    const userRef = doc(fbDb, 'users', userId);
+    await updateDoc(userRef, {
+      farmingMode: profile.farmingMode,
+      soilType: profile.soilType,
+      district: profile.district,
+      state: profile.state,
+      currentFertilizers: profile.currentFertilizers,
+      updatedAt: new Date().toISOString()
+    });
+    
+    console.log('Farming profile updated for user:', userId);
+  } catch (error) {
+    console.error("Error updating farming profile:", error);
+    throw error;
+  }
+};
+
 export { fbAuth as auth, fbDb as db };
+
 

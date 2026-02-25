@@ -10,6 +10,8 @@ import Onboarding from './components/Onboarding';
 import History from './components/History';
 import Profile from './components/Profile';
 import VoiceAssistant from './components/VoiceAssistant';
+import FarmAIChat from './components/FarmAIChat';
+import EmergencyCropHelp from './components/EmergencyCropHelp';
 import Auth from './components/Auth';
 import { 
   subscribeToAuthState, 
@@ -151,6 +153,10 @@ const App: React.FC = () => {
         return <Profile userProfile={userProfile} onUpdate={handleOnboardingComplete} onLogout={handleLogout} />;
       case AppView.LIVE_VOICE:
         return <VoiceAssistant userProfile={userProfile} />;
+      case AppView.FARM_AI_CHAT:
+        return <FarmAIChat userProfile={userProfile} onEmergency={() => setView(AppView.EMERGENCY_HELP)} />;
+      case AppView.EMERGENCY_HELP:
+        return <EmergencyCropHelp userProfile={userProfile} onBack={() => setView(AppView.FARM_AI_CHAT)} />;
       default:
         return <Dashboard userProfile={userProfile} setView={setView} />;
     }
@@ -159,8 +165,8 @@ const App: React.FC = () => {
   return (
     <Layout currentView={view} setView={setView} userProfile={userProfile}>
       {renderView()}
-      {/* Floating Action for Voice if not on the Voice Page */}
-      {view !== AppView.LIVE_VOICE && (
+      {/* Floating Action for Voice if not on the Voice/Chat Pages */}
+      {view !== AppView.LIVE_VOICE && view !== AppView.FARM_AI_CHAT && view !== AppView.EMERGENCY_HELP && (
         <button 
           onClick={() => setView(AppView.LIVE_VOICE)}
           className="fixed bottom-8 right-8 w-16 h-16 bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl hover:bg-green-800 transition-all active:scale-90 z-40 border-4 border-white"
