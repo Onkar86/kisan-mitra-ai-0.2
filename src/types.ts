@@ -31,16 +31,19 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
 };
 
 export interface UserProfile {
+  uid?: string;
   name: string;
+  email?: string;
+  phone?: string;
+  photoURL?: string;
   address: string;
-  mobile: string;
-  farmSize: string;
-  crops: string;
+  farmSize: number;
+  crops: string[];
   language: SupportedLanguage;
   aiProvider: AIProvider;
-  isLoggedIn: boolean;
   onboarded: boolean;
-  syncEnabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface GroundingSource {
@@ -73,7 +76,7 @@ export interface SoilMetric {
 
 export interface DiagnosisResult {
   id: string;
-  timestamp: number;
+  timestamp?: string | number;
   image?: string;
   disease: string;
   confidence: number;

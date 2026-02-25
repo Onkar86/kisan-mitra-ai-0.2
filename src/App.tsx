@@ -10,40 +10,106 @@ import Onboarding from './components/Onboarding';
 import History from './components/History';
 import Profile from './components/Profile';
 import VoiceAssistant from './components/VoiceAssistant';
+import Auth from './components/Auth';
+import { 
+  subscribeToAuthState, 
+  getUserProfile, 
+  getUserHistory, 
+  saveUserProfile, 
+  saveDiagnosisResult,
+  logout as firebaseLogout
+} from './services/firebaseService';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [history, setHistory] = useState<DiagnosisResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  // Subscribe to authentication state changes
   useEffect(() => {
-    const savedProfile = localStorage.getItem('kisan_mitra_profile');
-    const savedHistory = localStorage.getItem('kisan_mitra_history');
-    if (savedProfile) setUserProfile(JSON.parse(savedProfile));
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
-    setIsLoading(false);
+    const unsubscribe = subscribeToAuthState(async (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        setUserId(user.uid);
+        
+        // Load user profile from Firebase
+        const profile = await getUserProfile(user.uid);
+        if (profile) {
+          setUserProfile(profile);
+          
+          // Load user history from Firebase
+          const userHistory = await getUserHistory(user.uid);
+          setHistory(userHistory);
+        } else {
+          // New user - will complete onboarding
+          setUserProfile(null);
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+        setUserProfile(null);
+        setHistory([]);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleOnboardingComplete = (profile: UserProfile) => {
-    setUserProfile(profile);
-    localStorage.setItem('kisan_mitra_profile', JSON.stringify(profile));
+  const handleLoginSuccess = () => {
+    // Auth state will be handled by the subscription above
   };
 
-  const handleSaveHistory = (result: DiagnosisResult) => {
-    const newHistory = [result, ...history];
-    setHistory(newHistory);
-    localStorage.setItem('kisan_mitra_history', JSON.stringify(newHistory));
-  };
-
-  const handleLogout = () => {
-    if (confirm("Sign out? Data on this device will be cleared.")) {
-      localStorage.removeItem('kisan_mitra_profile');
-      setUserProfile(null);
-      setView(AppView.DASHBOARD);
+  const handleOnboardingComplete = async (profile: UserProfile) => {
+    if (!userId) return;
+    
+    const updatedProfile = {
+      ...profile,
+      uid: userId,
+      onboarded: true
+    };
+    
+    setUserProfile(updatedProfile);
+    
+    // Save to Firebase
+    try {
+      await saveUserProfile(updatedProfile);
+    } catch (error) {
+      console.error("Error saving profile:", error);
     }
   };
 
+  const handleSaveHistory = async (result: DiagnosisResult) => {
+    if (!userId) return;
+    
+    try {
+      const docId = await saveDiagnosisResult(userId, result);
+      const newHistory = [{ ...result, id: docId }, ...history];
+      setHistory(newHistory);
+    } catch (error) {
+      console.error("Error saving diagnosis:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (confirm("Sign out? You will need to sign in again.")) {
+      try {
+        await firebaseLogout();
+        setUserProfile(null);
+        setHistory([]);
+        setUserId(null);
+        setIsAuthenticated(false);
+        setView(AppView.DASHBOARD);
+      } catch (error) {
+        console.error("Error signing out:", error);
+      }
+    }
+  };
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-green-950 flex flex-col items-center justify-center gap-6">
@@ -59,6 +125,12 @@ const App: React.FC = () => {
     );
   }
 
+  // Not authenticated - show login
+  if (!isAuthenticated) {
+    return <Auth onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Authenticated but not onboarded - show onboarding
   if (!userProfile?.onboarded) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }

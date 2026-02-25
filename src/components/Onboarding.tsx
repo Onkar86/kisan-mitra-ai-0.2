@@ -11,9 +11,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
-    mobile: '',
-    farmSize: '',
-    crops: '',
+    phone: '',
+    farmSize: 0,
+    crops: [],
     language: 'hi' as SupportedLanguage,
     aiProvider: AIProvider.GEMINI
   });
@@ -31,9 +31,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     e.preventDefault();
     onComplete({
       ...formData,
-      isLoggedIn: true,
-      onboarded: true,
-      syncEnabled: true
+      onboarded: true
     });
   };
 
@@ -103,7 +101,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 </div>
                 <div>
                   <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1 px-1">Mobile No.</label>
-                  <input required type="tel" value={formData.mobile} onChange={(e) => setFormData({...formData, mobile: e.target.value})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="+91 98XXX XXXX" />
+                  <input required type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="+91 98XXX XXXX" />
                 </div>
               </div>
               <div>
@@ -113,11 +111,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1 px-1">Farm Size (in Acres)</label>
-                  <input required type="number" step="0.1" value={formData.farmSize} onChange={(e) => setFormData({...formData, farmSize: e.target.value})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="e.g. 5.5" />
+                  <input required type="number" step="0.1" value={formData.farmSize} onChange={(e) => setFormData({...formData, farmSize: parseFloat(e.target.value) || 0})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="e.g. 5.5" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1 px-1">Crops you plant</label>
-                  <input required type="text" value={formData.crops} onChange={(e) => setFormData({...formData, crops: e.target.value})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="e.g. Wheat, Rice, Cotton" />
+                  <input required type="text" value={formData.crops.join(', ')} onChange={(e) => setFormData({...formData, crops: e.target.value.split(',').map(c => c.trim()).filter(c => c)})} className="w-full p-3 bg-stone-100 rounded-xl focus:ring-4 focus:ring-lime-100 text-sm" placeholder="e.g. Wheat, Rice, Cotton" />
                 </div>
               </div>
               <div>

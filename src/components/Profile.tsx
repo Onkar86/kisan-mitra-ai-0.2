@@ -28,7 +28,7 @@ const Profile: React.FC<ProfileProps> = ({ userProfile, onUpdate, onLogout }) =>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Mobile Number</p>
-            <p className="font-bold text-stone-800">{userProfile.mobile}</p>
+            <p className="font-bold text-stone-800">{userProfile.phone || 'N/A'}</p>
           </div>
           <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Farm Location</p>
