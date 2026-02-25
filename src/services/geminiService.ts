@@ -106,7 +106,7 @@ export const getLiveAssistant = (callbacks: any, lang: SupportedLanguage = 'en')
     model: 'gemini-2.5-flash-native-audio-preview-12-2025',
     callbacks,
     config: {
-      responseModalities: ["AUDIO"],
+      responseModalities: ['audio'] as any,
       speechConfig: {
         voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } },
       },
