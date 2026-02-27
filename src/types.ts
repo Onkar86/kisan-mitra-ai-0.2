@@ -8,7 +8,9 @@ export enum AppView {
   PROFILE = 'PROFILE',
   LIVE_VOICE = 'LIVE_VOICE',
   FARM_AI_CHAT = 'FARM_AI_CHAT',
-  EMERGENCY_HELP = 'EMERGENCY_HELP'
+  EMERGENCY_HELP = 'EMERGENCY_HELP',
+  IMAGE_UPLOAD = 'IMAGE_UPLOAD',
+  OFFICER_DIRECTORY = 'OFFICER_DIRECTORY'
 }
 
 export enum AIProvider {
@@ -127,3 +129,55 @@ export interface AppNotification {
   time: number;
   severity?: 'low' | 'medium' | 'high';
 }
+
+// Weather & Climate
+export interface WeatherData {
+  temperature: number; // Celsius
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+  rainfall?: number;
+  feelsLike?: number;
+  uvIndex?: number;
+  advice?: string;
+}
+
+// Disease Detection
+export interface DiseaseDetectionResult {
+  disease: string;
+  confidence: number;
+  affectedArea: string;
+  stage: 'early' | 'moderate' | 'severe';
+  cropType: string;
+  image?: string;
+  immediateActions: string[];
+  preventiveMeasures: string[];
+  chemicalTreatment?: string;
+  organicTreatment?: string;
+}
+
+// Agricultural Officer
+export interface AgriculturalOfficer {
+  id: string;
+  name: string;
+  designation: string;
+  phone: string;
+  email?: string;
+  office: string;
+  district: string;
+  state: string;
+  expertise: string[]; // crop types they specialize in
+  languages: SupportedLanguage[];
+  availability?: 'available' | 'offline' | 'busy';
+  ratings?: number;
+}
+
+// Offline Data
+export interface OfflineData {
+  lastSync: string;
+  chatHistory: ChatMessage[];
+  savedArticles: string[];
+  officers: AgriculturalOfficer[];
+  weatherCache: WeatherData;
+}
+

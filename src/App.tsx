@@ -12,6 +12,8 @@ import Profile from './components/Profile';
 import VoiceAssistant from './components/VoiceAssistant';
 import FarmAIChat from './components/FarmAIChat';
 import EmergencyCropHelp from './components/EmergencyCropHelp';
+import CropImageUpload from './components/CropImageUpload';
+import OfficerDirectory from './components/OfficerDirectory';
 import Auth from './components/Auth';
 import { 
   subscribeToAuthState, 
@@ -157,6 +159,10 @@ const App: React.FC = () => {
         return <FarmAIChat userProfile={userProfile} onEmergency={() => setView(AppView.EMERGENCY_HELP)} />;
       case AppView.EMERGENCY_HELP:
         return <EmergencyCropHelp userProfile={userProfile} onBack={() => setView(AppView.FARM_AI_CHAT)} />;
+      case AppView.IMAGE_UPLOAD:
+        return <CropImageUpload userProfile={userProfile} />;
+      case AppView.OFFICER_DIRECTORY:
+        return <OfficerDirectory userProfile={userProfile} />;
       default:
         return <Dashboard userProfile={userProfile} setView={setView} />;
     }

@@ -3,13 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#16a34a" />
+  <meta name="description" content="Kisan Mitra AI - Smart Farmer Assistant developed by Onkar Mahamuni." />
+  <meta name="keywords" content="farming, agriculture, AI, Hindi, Marathi, India" />
   <title>Kisan Mitra AI | By Onkar Mahamuni</title>
   <meta name="author" content="Onkar Mahamuni" />
-  <meta name="description" content="Kisan Mitra AI - Smart Farmer Assistant developed by Onkar Mahamuni." />
+  <link rel="manifest" href="/kisan-mitra-ai-0.2/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='50' font-size='50' text-anchor='middle' dominant-baseline='central'>🌾</text></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%2316a34a' width='180' height='180'/><text x='90' y='90' font-size='100' fill='white' text-anchor='middle' dominant-baseline='central'>🌾</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-stone-50 text-stone-900">
   <div id="root"></div>
   <script type="module" src="./src/main.tsx"></script>
+  <script>
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register(
+          new URL('/kisan-mitra-ai-0.2/service-worker.js', import.meta.url), 
+          { scope: '/kisan-mitra-ai-0.2/' }
+        ).then(reg => {
+          console.log('Service Worker registered:', reg);
+        }).catch(err => {
+          console.log('Service Worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

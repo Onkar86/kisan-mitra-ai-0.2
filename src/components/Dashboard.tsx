@@ -85,6 +85,28 @@ const Dashboard: React.FC<{userProfile: UserProfile | null, setView: (view: AppV
             <p className="text-sm font-bold text-stone-400 uppercase tracking-widest">ज्ञान कोश</p>
           </div>
         </button>
+
+        <button 
+          onClick={() => setView(AppView.OFFICER_DIRECTORY)}
+          className="bg-white p-8 rounded-[3rem] border border-stone-100 shadow-xl hover:shadow-2xl transition-all group flex flex-col items-center text-center space-y-4"
+        >
+          <div className="w-20 h-20 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">👨‍🌾</div>
+          <div>
+            <h4 className="text-xl font-black text-stone-800">OFFICERS</h4>
+            <p className="text-sm font-bold text-stone-400 uppercase tracking-widest">विशेषज्ञ संपर्क</p>
+          </div>
+        </button>
+
+        <button 
+          onClick={() => setView(AppView.IMAGE_UPLOAD)}
+          className="bg-white p-8 rounded-[3rem] border border-stone-100 shadow-xl hover:shadow-2xl transition-all group flex flex-col items-center text-center space-y-4"
+        >
+          <div className="w-20 h-20 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">🩺</div>
+          <div>
+            <h4 className="text-xl font-black text-stone-800">DISEASE</h4>
+            <p className="text-sm font-bold text-stone-400 uppercase tracking-widest">पिक निदान</p>
+          </div>
+        </button>
       </section>
 
       {/* Critical Alerts */}
